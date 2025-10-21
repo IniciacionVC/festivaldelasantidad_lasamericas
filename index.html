@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Festival de los Santos - Parroquia Nuestra Señora Reina de las Américas</title>
+<style>
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: url('santo.png') no-repeat center top; /* 📌 alineado al top para ver todo */
+        background-size: cover; /* 📏 ajusta la imagen para que se vea completa */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        min-height: 100vh;
+        padding-bottom: 50px; /* espacio inferior */
+        padding-top: 10px; /* sube un poco desde arriba */
+    }
+
+    .form-container {
+        width: 80%; /* un poco más estrecho */
+        max-width: 320px; /* menos ancho */
+        background-color: rgba(253, 243, 231, 0.8); /* más transparente */
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        padding: 18px;
+        backdrop-filter: blur(3px);
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 1.15rem;
+        color: #4b2e05;
+        line-height: 1.4;
+        margin-bottom: 8px;
+    }
+
+    form label {
+        display: block;
+        margin-top: 10px;
+        font-weight: bold;
+        color: #3d2a09;
+        font-size: 14px;
+    }
+
+    form input, form select {
+        width: 100%;
+        padding: 6px;
+        margin-top: 5px;
+        border-radius: 6px;
+        border: 1px solid #c8b8a6;
+        font-size: 14px;
+    }
+
+    button {
+        margin-top: 16px;
+        padding: 8px;
+        width: 100%;
+        background-color: #f4a261;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+        color: white;
+        transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #e76f51;
+    }
+
+    .mensaje-confirmacion {
+        display: none;
+        margin-top: 10px;
+        color: green;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    @media (max-width: 600px) {
+        body {
+            justify-content: flex-end;
+            padding-bottom: 35px;
+            padding-top: 5px;
+        }
+        .form-container {
+            width: 75%;
+            max-width: 300px;
+            background-color: rgba(253, 243, 231, 0.75);
+        }
+        h1 {
+            font-size: 1rem;
+        }
+        form input, form select {
+            font-size: 13px;
+            padding: 5px;
+        }
+        button {
+            font-size: 14px;
+            padding: 7px;
+        }
+    }
+</style>
+</head>
+<body>
+<div class="form-container">
+    <h1>Festival de los Santos<br>Parroquia Nuestra Señora Reina de las Américas</h1>
+    <form id="festivalForm" action="https://formspree.io/f/mblzeazg" method="POST">
+        <label for="nombre">¿Cuál es tu nombre?</label>
+        <input type="text" id="nombre" name="nombre" required>
+
+        <label for="edad">¿Cuál es tu edad?</label>
+        <input type="number" id="edad" name="edad" required>
+
+        <label>¿Perteneces a alguna comunidad?</label>
+        <select id="comunidad-pregunta" name="comunidad-pregunta" required>
+            <option value="">--Selecciona--</option>
+            <option value="sí">Sí</option>
+            <option value="no">No</option>
+        </select>
+
+        <div id="comunidad-detalle" style="display:none;">
+            <label for="comunidad">¿Cuál es la comunidad a la que perteneces?</label>
+            <input type="text" id="comunidad" name="comunidad">
+        </div>
+
+        <div id="santo-detalle" style="display:none;">
+            <label for="santo">¿De qué santo te vas a disfrazar?</label>
+            <input type="text" id="santo" name="santo">
+        </div>
+
+        <button type="submit">Enviar</button>
+        <div class="mensaje-confirmacion" id="mensaje">¡Formulario enviado correctamente!</div>
+    </form>
+</div>
+
+<script>
+    const comunidadPregunta = document.getElementById('comunidad-pregunta');
+    const comunidadDetalle = document.getElementById('comunidad-detalle');
+    const santoDetalle = document.getElementById('santo-detalle');
+    const form = document.getElementById('festivalForm');
+    const mensaje = document.getElementById('mensaje');
+
+    comunidadPregunta.addEventListener('change', function() {
+        if (this.value === 'sí') {
+            comunidadDetalle.style.display = 'block';
+            santoDetalle.style.display = 'block';
+            document.getElementById('comunidad').required = true;
+            document.getElementById('santo').required = true;
+        } else if (this.value === 'no') {
+            comunidadDetalle.style.display = 'none';
+            document.getElementById('comunidad').required = false;
+            santoDetalle.style.display = 'block';
+            document.getElementById('santo').required = true;
+        } else {
+            comunidadDetalle.style.display = 'none';
+            santoDetalle.style.display = 'none';
+            document.getElementById('comunidad').required = false;
+            document.getElementById('santo').required = false;
+        }
+    });
+
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { 'Accept': 'application/json' }
+        }).then(response => {
+            if (response.ok) {
+                mensaje.style.display = 'block';
+                form.reset();
+                comunidadDetalle.style.display = 'none';
+                santoDetalle.style.display = 'none';
+                setTimeout(() => { mensaje.style.display = 'none'; }, 3000);
+            } else {
+                response.json().then(data => {
+                    alert("Error al enviar el formulario: " + (data["error"] || "Inténtalo de nuevo"));
+                })
+            }
+        }).catch(error => {
+            alert("Error al enviar el formulario: " + error);
+        });
+    });
+</script>
+</body>
+</html>
